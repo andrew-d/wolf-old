@@ -13,12 +13,12 @@ type private struct{}
 // App is the base type for wolf.  It allows defining routes and adding
 // middleware, and implements the http.Handler interface.
 type App struct {
-	router *httprouter.Router
-	stack  middlewareStack
-
 	// RootContext is the root context for this App.  Middleware functions'
 	// context pointer defaults to pointing to this.
 	RootContext context.Context
+
+	router *httprouter.Router
+	stack  middlewareStack
 }
 
 // New creates a new App with a background context.
