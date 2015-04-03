@@ -14,21 +14,30 @@ type Handler func(context.Context, http.ResponseWriter, *http.Request)
 
 type App struct {
 	router      *httprouter.Router
+	stack       middlewareStack
 	RootContext context.Context
 }
 
 func New() *App {
 	ret := &App{
 		router: httprouter.New(),
+		stack: middlewareStack{
+			funcs: make([]resolvedMiddlewareType, 0),
+		},
 	}
+	ret.stack.app = ret
+	ret.stack.resetPool()
 	return ret
 }
 
-// TODO: middleware support
-
 func (a *App) wrapHandler(h Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		var ctx context.Context = a.RootContext
+		var ctx context.Context
+
+		// Get context that was modified by the middleware
+		wrapper := r.Body.(*bodyWrapper)
+		ctx = wrapper.ctx
+		r.Body = wrapper.underlying
 
 		// Unpack the request params
 		ctx = setParamsInContext(ctx, p)
@@ -38,6 +47,10 @@ func (a *App) wrapHandler(h Handler) httprouter.Handle {
 		// Call the underlying handler
 		h(ctx, w, r)
 	}
+}
+
+func (a *App) Use(m interface{}) {
+	a.stack.Push(m)
 }
 
 func (a *App) Handle(method, path string, handler Handler) {
@@ -73,5 +86,7 @@ func (a *App) Put(path string, handler Handler) {
 }
 
 func (a *App) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	a.router.ServeHTTP(w, req)
+	m := a.stack.get()
+	m.ServeHTTP(w, req)
+	a.stack.release(m)
 }
