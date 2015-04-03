@@ -6,6 +6,10 @@ wolf
 A very simple (~200 LoC) web "framework" that simply integrates [httprouter][hr] and [x/net/context][ctx].
 
 
+## License
+
+MIT
+
 
 [hr]: https://github.com/julienschmidt/httprouter
 [ctx]: https://godoc.org/golang.org/x/net/context
