@@ -7,7 +7,9 @@ import (
 )
 
 // Wrapper struct that lets us store our context within an incoming
-// http.Request's Body field
+// http.Request's Body field.  All functions will panic, since this should
+// be applied after all middleware is run, before the router, and then
+// unwrapped before the handler function is run.
 type bodyWrapper struct {
 	ctx        context.Context
 	underlying io.ReadCloser

@@ -10,81 +10,80 @@ import (
 // Internal private type for context key
 type private struct{}
 
-type Handler func(context.Context, http.ResponseWriter, *http.Request)
-
+// App is the base type for wolf.  It allows defining routes and adding
+// middleware, and implements the http.Handler interface.
 type App struct {
-	router      *httprouter.Router
-	stack       middlewareStack
+	router *httprouter.Router
+	stack  middlewareStack
+
+	// RootContext is the root context for this App.  Middleware functions'
+	// context pointer defaults to pointing to this.
 	RootContext context.Context
 }
 
+// New creates a new App with a background context.
 func New() *App {
 	ret := &App{
 		router: httprouter.New(),
 		stack: middlewareStack{
 			funcs: make([]resolvedMiddlewareType, 0),
 		},
+		RootContext: context.Background(),
 	}
 	ret.stack.app = ret
 	ret.stack.resetPool()
 	return ret
 }
 
-func (a *App) wrapHandler(h Handler) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		var ctx context.Context
-
-		// Get context that was modified by the middleware
-		wrapper := r.Body.(*bodyWrapper)
-		ctx = wrapper.ctx
-		r.Body = wrapper.underlying
-
-		// Unpack the request params
-		ctx = setParamsInContext(ctx, p)
-
-		// TODO: do we want to save w&r in the context?
-
-		// Call the underlying handler
-		h(ctx, w, r)
-	}
-}
-
+// Use appends a middleware function to the set of middleware on this App.
 func (a *App) Use(m interface{}) {
 	a.stack.Push(m)
 }
 
-func (a *App) Handle(method, path string, handler Handler) {
+// Handle registers a new request handler with the given path and method.
+//
+// The app also provides shortcut methods for common HTTP methods (e.g. GET,
+// POST, DELETE, etc.)
+func (a *App) Handle(method, path string, handler HandlerType) {
 	a.router.Handle(method, path, a.wrapHandler(handler))
 }
 
-func (a *App) Delete(path string, handler Handler) {
-	a.router.DELETE(path, a.wrapHandler(handler))
+// Delete is a shortcut for app.Handle("DELETE", path, handler)
+func (a *App) Delete(path string, handler HandlerType) {
+	a.Handle("DELETE", path, handler)
 }
 
-func (a *App) Get(path string, handler Handler) {
-	a.router.GET(path, a.wrapHandler(handler))
+// Get is a shortcut for app.Handle("GET", path, handler)
+func (a *App) Get(path string, handler HandlerType) {
+	a.Handle("GET", path, handler)
 }
 
-func (a *App) Head(path string, handler Handler) {
-	a.router.HEAD(path, a.wrapHandler(handler))
+// Head is a shortcut for app.Handle("HEAD", path, handler)
+func (a *App) Head(path string, handler HandlerType) {
+	a.Handle("HEAD", path, handler)
 }
 
-func (a *App) Options(path string, handler Handler) {
-	a.router.OPTIONS(path, a.wrapHandler(handler))
+// Options is a shortcut for app.Handle("OPTIONS", path, handler)
+func (a *App) Options(path string, handler HandlerType) {
+	a.Handle("OPTIONS", path, handler)
 }
 
-func (a *App) Patch(path string, handler Handler) {
-	a.router.PATCH(path, a.wrapHandler(handler))
+// Patch is a shortcut for app.Handle("PATCH", path, handler)
+func (a *App) Patch(path string, handler HandlerType) {
+	a.Handle("PATCH", path, handler)
 }
 
-func (a *App) Post(path string, handler Handler) {
-	a.router.POST(path, a.wrapHandler(handler))
+// Post is a shortcut for app.Handle("POST", path, handler)
+func (a *App) Post(path string, handler HandlerType) {
+	a.Handle("POST", path, handler)
 }
 
-func (a *App) Put(path string, handler Handler) {
-	a.router.PUT(path, a.wrapHandler(handler))
+// Put is a shortcut for app.Handle("PUT", path, handler)
+func (a *App) Put(path string, handler HandlerType) {
+	a.Handle("PUT", path, handler)
 }
 
+// ServeHTTP makes this App implement the http.Handler interface.
 func (a *App) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	m := a.stack.get()
 	m.ServeHTTP(w, req)
