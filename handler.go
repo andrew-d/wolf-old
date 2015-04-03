@@ -11,10 +11,10 @@ import (
 // wolf will accept a handler of one of the following types, and will convert
 // it to the Handler interface that is used internally.
 //
-// - types that implement http.Handler
-// - types that implement Handler
-// - func(http.ResponseWriter, *http.Request)
-// - func(context.Context, http.ResponseWriter, *http.Request)
+//	- types that implement http.Handler
+//	- types that implement Handler
+//	- func(http.ResponseWriter, *http.Request)
+//	- func(context.Context, http.ResponseWriter, *http.Request)
 type HandlerType interface{}
 
 // Handler is similar to net/http's http.Handler, but accepts a Context from
