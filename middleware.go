@@ -17,24 +17,32 @@ General plans:
 		with all middleware functions called on it
 */
 
-type resolvedMiddlewareType func(ctx *context.Context, h http.Handler) http.Handler
+// MiddlewareType is an alias for interface{}, but is documented here for
+// clarity.  wolf will accept middleware of one of the following types, and
+// will convert it to the internal middleware type.
+//
+//	- func(*context.Context, http.Handler) http.Handler
+//	- func(http.Handler) http.Handler
+type MiddlewareType interface{}
+
+type canonicalMiddleware func(ctx *context.Context, h http.Handler) http.Handler
 
 // middlewareStack is an entire middleware stack.  It contains an array of
 // middleware functions (outermost first) protected by a mutex, and a cache of
 // pre-built stack instances.
 type middlewareStack struct {
-	funcs []resolvedMiddlewareType
+	funcs []canonicalMiddleware
 	mu    sync.Mutex
 	cache *sync.Pool // cache of pre-built middleware functions
 	app   *App       // the app that this stack belongs to
 }
 
-func (m *middlewareStack) Push(fn interface{}) {
+func (m *middlewareStack) Push(fn MiddlewareType) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	// Typecheck and append this function
-	var resolvedFn resolvedMiddlewareType
+	var resolvedFn canonicalMiddleware
 	switch f := fn.(type) {
 	case func(http.Handler) http.Handler:
 		resolvedFn = func(ctx *context.Context, h http.Handler) http.Handler {

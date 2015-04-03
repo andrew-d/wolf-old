@@ -26,7 +26,7 @@ func New() *App {
 	ret := &App{
 		router: httprouter.New(),
 		stack: middlewareStack{
-			funcs: make([]resolvedMiddlewareType, 0),
+			funcs: make([]canonicalMiddleware, 0),
 		},
 		RootContext: context.Background(),
 	}
@@ -36,7 +36,9 @@ func New() *App {
 }
 
 // Use appends a middleware function to the set of middleware on this App.
-func (a *App) Use(m interface{}) {
+// Middleware is run  in addition order - i.e. if you add middleware1, and then
+// add middleware2, middleware1 will execute first.
+func (a *App) Use(m MiddlewareType) {
 	a.stack.Push(m)
 }
 
