@@ -22,23 +22,23 @@ func (d dummyStdHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {}
 
 func TestMakeHandler(t *testing.T) {
 	// Our handler type
-	assert.NotNil(t, makeHandler(dummyHandler{}))
+	assert.NotNil(t, MakeHandler(dummyHandler{}))
 
 	// http.Handler
 	var stdHandler http.Handler = dummyStdHandler{}
-	assert.NotNil(t, makeHandler(stdHandler))
+	assert.NotNil(t, MakeHandler(stdHandler))
 
 	// net/http HandlerFunc style
 	stdFn := func(w http.ResponseWriter, r *http.Request) {}
-	assert.NotNil(t, makeHandler(stdFn))
+	assert.NotNil(t, MakeHandler(stdFn))
 
 	// Our HandlerFunc type
 	fn := func(ctx context.Context, w http.ResponseWriter, r *http.Request) {}
-	assert.NotNil(t, makeHandler(fn))
+	assert.NotNil(t, MakeHandler(fn))
 
 	// Another, incompatible type
 	assert.Panics(t, func() {
-		makeHandler(func(i int) int {
+		MakeHandler(func(i int) int {
 			return i + 1
 		})
 	})
