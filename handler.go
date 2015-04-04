@@ -48,9 +48,9 @@ func (h netHTTPWrap) ServeHTTPCtx(ctx context.Context, w http.ResponseWriter, r 
 	h.ServeHTTP(w, r)
 }
 
-// makeHandler turns a HandlerType into something that implements our Handler
-// interface.
-func makeHandler(h HandlerType) Handler {
+// MakeHandler turns a HandlerType into something that implements our Handler
+// interface.  It will panic if the input is not a valid HandlerType.
+func MakeHandler(h HandlerType) Handler {
 	// Convert the handler type
 	switch f := h.(type) {
 	case Handler:
@@ -69,7 +69,7 @@ func makeHandler(h HandlerType) Handler {
 // wrapHandler turns something that implements our Handler interface into a
 // function that implements httprouter's interface.
 func (a *App) wrapHandler(v HandlerType) httprouter.Handle {
-	h := makeHandler(v)
+	h := MakeHandler(v)
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var ctx context.Context
 
