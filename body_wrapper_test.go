@@ -7,13 +7,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBodyWrapper(t *testing.T) {
-	var b io.ReadCloser = &bodyWrapper{}
+type dummyReadCloser struct {
+	readCalled  bool
+	closeCalled bool
+}
 
-	assert.Panics(t, func() {
-		b.Read(nil)
-	})
-	assert.Panics(t, func() {
-		b.Close()
-	})
+func (d *dummyReadCloser) Read(buf []byte) (int, error) {
+	d.readCalled = true
+	return 0, nil
+}
+
+func (d *dummyReadCloser) Close() error {
+	d.closeCalled = true
+	return nil
+}
+
+func TestBodyWrapper(t *testing.T) {
+	u := &dummyReadCloser{}
+	var b io.ReadCloser = &bodyWrapper{underlying: u}
+
+	b.Read(nil)
+	assert.True(t, u.readCalled)
+
+	b.Close()
+	assert.True(t, u.closeCalled)
 }

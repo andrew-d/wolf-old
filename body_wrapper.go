@@ -7,20 +7,18 @@ import (
 )
 
 // Wrapper struct that lets us store our context within an incoming
-// http.Request's Body field.  All functions will panic, since this should
-// be applied after all middleware is run, before the router, and then
-// unwrapped before the handler function is run.
+// http.Request's Body field.
 type bodyWrapper struct {
 	ctx        context.Context
 	underlying io.ReadCloser
 }
 
-func (w *bodyWrapper) Read([]byte) (int, error) {
-	panic("should not be called")
+func (w *bodyWrapper) Read(buf []byte) (int, error) {
+	return w.underlying.Read(buf)
 }
 
 func (w *bodyWrapper) Close() error {
-	panic("should not be called")
+	return w.underlying.Close()
 }
 
 // Static type-checking
