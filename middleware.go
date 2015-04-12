@@ -7,16 +7,6 @@ import (
 	"golang.org/x/net/context"
 )
 
-/*
-General plans:
-	- Middleware stack can be 'Push'-ed to
-	- Pushing to a stack appends a new middleware func and invalidates any
-		existing cache
-	- We use a sync.Pool to cache the "applied" middleware stack (name?)
-	- An "applied" middleware stack consists of an underlying handler function,
-		with all middleware functions called on it
-*/
-
 // MiddlewareType is an alias for interface{}, but is documented here for
 // clarity.  wolf will accept middleware of one of the following types, and
 // will convert it to the internal middleware type.
