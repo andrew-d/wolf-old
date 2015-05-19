@@ -1,6 +1,7 @@
 package wolf
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -62,7 +63,10 @@ func MakeHandler(h HandlerType) Handler {
 	case func(http.ResponseWriter, *http.Request):
 		return netHTTPWrap{http.HandlerFunc(f)}
 	default:
-		panic("") // TODO
+		msg := fmt.Sprintf(`Invalid handler type '%T'.  See `+
+			`https://godoc.org/github.com/andrew-d/wolf#HandlerType for a `+
+			`list of valid handler types`, h)
+		panic(msg)
 	}
 }
 

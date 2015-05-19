@@ -1,6 +1,7 @@
 package wolf
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -41,7 +42,10 @@ func (m *middlewareStack) Push(fn MiddlewareType) {
 	case func(*context.Context, http.Handler) http.Handler:
 		resolvedFn = f
 	default:
-		panic("TODO: real error message")
+		msg := fmt.Sprintf(`Invalid middleware type '%T'.  See `+
+			`https://godoc.org/github.com/andrew-d/wolf#MiddlewareType for a `+
+			`list of valid middleware types`, fn)
+		panic(msg)
 	}
 
 	m.funcs = append(m.funcs, resolvedFn)
