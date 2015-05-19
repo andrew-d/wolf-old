@@ -20,4 +20,6 @@ func TestWolfHelpers(t *testing.T) {
 	a.Patch("/", fn)
 	a.Post("/", fn)
 	a.Put("/", fn)
+
+	a.Compile()
 }

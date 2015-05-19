@@ -42,6 +42,27 @@ func (a *App) Use(m MiddlewareType) {
 	a.stack.Push(m)
 }
 
+// Compile will prepare the internal state of this App in order to serve
+// requests.  Calling this is not necessary, but will reduce latency when
+// serving the initial request(s).
+func (a *App) Compile() {
+	const COMPILE_SIZE = 32
+
+	// Check out some number of middleware stacks.
+	stacks := make([]http.Handler, COMPILE_SIZE)
+	for i := 0; i < COMPILE_SIZE; i++ {
+		stacks[i] = a.stack.get()
+	}
+
+	// Return them to the pool
+	for i := 0; i < COMPILE_SIZE; i++ {
+		a.stack.release(stacks[i])
+	}
+
+	// We're done with our middleware stacks.
+	stacks = nil
+}
+
 // Handle registers a new request handler with the given path and method.
 //
 // The app also provides shortcut methods for common HTTP methods (e.g. GET,
