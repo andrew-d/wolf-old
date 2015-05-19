@@ -36,7 +36,7 @@ func New() *App {
 }
 
 // Use appends a middleware function to the set of middleware on this App.
-// Middleware is run  in addition order - i.e. if you add middleware1, and then
+// Middleware is run in addition order - i.e. if you add middleware1, and then
 // add middleware2, middleware1 will execute first.
 func (a *App) Use(m MiddlewareType) {
 	a.stack.Push(m)
