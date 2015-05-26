@@ -30,7 +30,7 @@ func TestRequestID(t *testing.T) {
 	assert.True(t, run)
 }
 
-// Test that retrieving a non-existant request ID doen't fail.
+// Test that retrieving a non-existant request ID doesn't fail.
 func TestNonExistantRequestID(t *testing.T) {
 	a := wolf.New()
 

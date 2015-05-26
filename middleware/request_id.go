@@ -12,10 +12,11 @@ import (
 	"golang.org/x/net/context"
 )
 
-var requestIdKey private
-
-var prefix string
-var reqid uint64
+var (
+	requestIdKey private
+	prefix       string
+	reqid        uint64
+)
 
 func init() {
 	hostname, err := os.Hostname()
